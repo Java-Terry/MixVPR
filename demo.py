@@ -23,10 +23,10 @@ class BaseDataset(data.Dataset):
 
         # path to images
         if 'query' in self.img_path:
-            img_path_list = glob.glob(self.img_path + '/**/**/*.jpg', recursive=True)
+            img_path_list = glob.glob(self.img_path + '*.png', recursive=True)
             self.img_path_list = img_path_list
         elif 'db' in self.img_path:
-            img_path_list = glob.glob(self.img_path + '/**/**/*.jpg', recursive=True)
+            img_path_list = glob.glob(self.img_path + '*.png', recursive=True)
             # sort images for db
             self.img_path_list = sorted(img_path_list, key=lambda x: int(os.path.splitext(os.path.basename(x))[0]))
         else:
@@ -78,7 +78,7 @@ class InferencePipeline:
                 global_descriptors[np.array(indices), :] = descriptors
 
         # save global descriptors
-        np.save(f'./LOGS/global_descriptors_{split}.npy', global_descriptors)
+        np.save(f'/home/java/MixVPR/logs/global_descriptors_{split}.npy', global_descriptors)
         return global_descriptors
 
 
@@ -131,7 +131,6 @@ def calculate_top_k(q_matrix: np.ndarray,
 
     return top_k_matches
 
-
 def record_matches(top_k_matches: np.ndarray,
                    query_dataset: BaseDataset,
                    database_dataset: BaseDataset,
@@ -142,6 +141,8 @@ def record_matches(top_k_matches: np.ndarray,
             for i in db_indices.tolist():
                 pred_db_paths = database_dataset.img_path_list[i]
             f.write(f'{pred_query_path} {pred_db_paths}\n')
+        import code
+        code.interact(local=dict(globals(), **locals()))
 
 
 def visualize(top_k_matches: np.ndarray,
@@ -173,16 +174,16 @@ def visualize(top_k_matches: np.ndarray,
 
 def main():
     # load images
-    query_path = ''         # path to query images folder path
-    datasets_path = ''      # path to database images folder path
+    query_path = '/home/java/AnyFeature-Benchmark/KITTI/02/rgb_query/'         # path to query images folder path
+    datasets_path = '/home/java/AnyFeature-Benchmark/KITTI/02/rgb_db/'      # path to database images folder path
 
-    assert query_path == '' and datasets_path == '', 'Please specify the path to the query and datasets'
+    #assert query_path == '' and datasets_path == '', 'Please specify the path to the query and datasets'
 
     query_dataset = BaseDataset(query_path)
     database_dataset = BaseDataset(datasets_path)
 
-    # load model
-    model = load_model('./LOGS/resnet50_MixVPR_4096_channels(1024)_rows(4).ckpt')
+    # load model # './LOGS/resnet50_MixVPR_4096_channels(1024)_rows(4).ckpt')
+    model = load_model('/home/java/MixVPR/resnet50_MixVPR_4096_channels(1024)_rows(4).ckpt')
 
     # set up inference pipeline
     database_pipeline = InferencePipeline(model=model, dataset=database_dataset, feature_dim=4096)
@@ -196,10 +197,13 @@ def main():
     top_k_matches = calculate_top_k(q_matrix=query_global_descriptors, db_matrix=db_global_descriptors, top_k=10)
 
     # record query_database_matches
-    record_matches(top_k_matches, query_dataset, database_dataset, out_file='./LOGS/record.txt')
+    record_matches(top_k_matches, query_dataset, database_dataset, out_file='/home/java/MixVPR/logs/record.txt')
 
     # visualize top-k matches
-    visualize(top_k_matches, query_dataset, database_dataset, visual_dir='./LOGS/visualize')
+    visualize(top_k_matches, query_dataset, database_dataset, visual_dir='/home/java/MixVPR/logs/visualize')
+
+    import code
+    code.interact(local=locals())
 
 
 if __name__ == '__main__':
