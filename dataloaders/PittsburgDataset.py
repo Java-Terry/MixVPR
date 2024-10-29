@@ -10,6 +10,7 @@ from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 
 root_dir = '../datasets/Pittsburgh/'
+root_dir = '/home/java/AnyFeature-Benchmark/KITTI/02/rgb_db'
 
 if not exists(root_dir):
     raise FileNotFoundError(
